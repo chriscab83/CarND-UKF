@@ -72,13 +72,9 @@ public:
   double NIS_radar_;
 
   /**
-   * Constructor
+   * Constructor, Destructor
    */
   UKF();
-
-  /**
-   * Destructor
-   */
   virtual ~UKF();
 
   /**
@@ -88,8 +84,7 @@ public:
   void ProcessMeasurement(MeasurementPackage meas_package);
 
   /**
-   * Prediction Predicts sigma points, the state, and the state covariance
-   * matrix
+   * Prediction Predicts sigma points, the state, and the state covariance matrix
    * @param delta_t Time between k and k+1 in s
    */
   void Prediction(double delta_t);

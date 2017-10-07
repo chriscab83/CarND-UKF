@@ -61,7 +61,7 @@ UKF::UKF() {
   // predicted sigma point vector
   Xsig_pred_ = MatrixXd(n_x_, 2 * n_aug_ + 1);
 
-  // set prediction weigths
+  // set prediction weights
   weights_ = VectorXd(2 * n_aug_ + 1);
   weights_(0) = lambda_/(lambda_+n_aug_);
 
@@ -175,10 +175,13 @@ void UKF::Prediction(double delta_t) {
     double yaw_p = yaw + yawd*delta_t;
     double yawd_p = yawd;
 
-    px_p = px_p + 0.5*nu_a*delta_t*delta_t * cos(yaw);
-    py_p = py_p + 0.5*nu_a*delta_t*delta_t * sin(yaw);
+    double delta_t2 = delta_t*delta_t;
+    double half_nu_a = 0.5*nu_a;
+
+    px_p = px_p + half_nu_a*delta_t2 * cos(yaw);
+    py_p = py_p + half_nu_a*delta_t2 * sin(yaw);
     v_p = v_p + nu_a*delta_t;
-    yaw_p = yaw_p + 0.5*nu_yawdd*delta_t*delta_t;
+    yaw_p = yaw_p + 0.5*nu_yawdd*delta_t2;
     yawd_p = yawd_p + nu_yawdd*delta_t;
 
     Xsig_pred_(0, i) = px_p;
@@ -317,13 +320,13 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
   for (int i = 0; i < 2 * n_aug_ + 1; ++i) {
     VectorXd z_diff = Zsig.col(i) - z_pred;
 
-    while (z_diff(1) >  M_PI) z_diff(1) -= 2.*M_PI;
-    while (z_diff(1) < -M_PI) z_diff(1) += 2.*M_PI;
+    while (z_diff(1) >  M_PI) { z_diff(1) -= 2.*M_PI; }
+    while (z_diff(1) < -M_PI) { z_diff(1) += 2.*M_PI; }
 
     VectorXd x_diff = Xsig_pred_.col(i) - x_;
 
-    while (x_diff(3) >  M_PI) x_diff(3) -= 2.*M_PI;
-    while (x_diff(3) < -M_PI) x_diff(3) += 2.*M_PI;
+    while (x_diff(3) >  M_PI) { x_diff(3) -= 2.*M_PI; }
+    while (x_diff(3) < -M_PI) { x_diff(3) += 2.*M_PI; }
 
     Tc = Tc + weights_(i) * x_diff * z_diff.transpose();
   }
@@ -331,8 +334,8 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
   MatrixXd K = Tc * S.inverse();
   VectorXd z_diff = z - z_pred;
 
-  while (z_diff(1) >  M_PI) z_diff(1) -= 2.*M_PI;
-  while (z_diff(1) < -M_PI) z_diff(1) += 2.*M_PI;
+  while (z_diff(1) >  M_PI) { z_diff(1) -= 2.*M_PI; }
+  while (z_diff(1) < -M_PI) { z_diff(1) += 2.*M_PI; }
 
   x_ = x_ + K * z_diff;
   P_ = P_ - K * S * K.transpose();
